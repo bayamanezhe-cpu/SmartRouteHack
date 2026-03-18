@@ -1,0 +1,663 @@
+/* smartroute.css - Modern Mobile-First UI System */
+
+:root {
+    --bg-dark: #090a0f;
+    --bg-panel: #141720;
+    --bg-panel-glass: rgba(20, 23, 32, 0.75);
+    
+    --accent-primary: #3b82f6;
+    --accent-primary-glow: rgba(59, 130, 246, 0.5);
+    --accent-emergency: #ff3366;
+    --accent-emergency-glow: rgba(255, 51, 102, 0.5);
+    --accent-taxi: #ffb800;
+    --accent-taxi-glow: rgba(255, 184, 0, 0.5);
+    --accent-courier: #00d2ff;
+    --accent-courier-glow: rgba(0, 210, 255, 0.5);
+    --accent-police: #3b82f6;
+    --accent-police-glow: rgba(59, 130, 246, 0.5);
+    --accent-fire: #ff6b00;
+    --accent-fire-glow: rgba(255, 107, 0, 0.5);
+    
+    --text-primary: #ffffff;
+    --text-secondary: #a3a8b4;
+    --text-muted: #5e6576;
+    
+    --border-color: rgba(255, 255, 255, 0.08);
+    
+    --shadow-sm: 0 4px 6px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 10px 15px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 20px 25px rgba(0, 0, 0, 0.5);
+    
+    --border-radius-sm: 8px;
+    --border-radius-md: 16px;
+    --border-radius-lg: 24px;
+    --border-radius-xl: 32px;
+    
+    --safe-area-bottom: 24px;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background-color: #030408;
+    background-image: 
+        radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.1) 0px, transparent 50%),
+        radial-gradient(at 100% 0%, rgba(139, 92, 246, 0.1) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(255, 51, 102, 0.05) 0px, transparent 50%),
+        radial-gradient(at 0% 100%, rgba(0, 210, 255, 0.05) 0px, transparent 50%);
+    color: var(--text-primary);
+    overflow: hidden; 
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* App Container - Phone Simulator */
+#app {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background-color: var(--bg-dark);
+}
+
+/* On desktop, make it look like a phone */
+@media (min-width: 600px) {
+    #app {
+        width: 390px; /* iPhone width */
+        height: 844px; /* iPhone height */
+        max-height: 90vh; /* Don't overflow small desktop screens */
+        border-radius: 40px;
+        box-shadow: 0 0 0 12px #111, /* Bezel */
+                    0 0 0 14px #333, /* Outer rim */
+                    0 30px 60px rgba(0,0,0,0.8);
+    }
+    
+    /* Simulate the iPhone notch/dynamic island */
+    #app::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 120px;
+        height: 30px;
+        background: #111;
+        border-radius: 0 0 16px 16px;
+        z-index: 9999; /* Always on top */
+    }
+}
+
+/* Map Container */
+.map-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1; /* Lowest */
+}
+
+#map {
+    width: 100%;
+    height: 100%;
+}
+
+/* Common Screen Settings */
+.screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none; /* Let clicks pass through map by default */
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    pointer-events: none; /* Never catch clicks on the fullscreen overlay itself */
+}
+
+.screen.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Auth screen needs to catch clicks so clicks don't go to map */
+#auth-screen.active {
+    pointer-events: auto; 
+}
+
+/* Auth / Onboarding Screen */
+#auth-screen {
+    background: radial-gradient(circle at 50% 10%, #1e243b 0%, var(--bg-dark) 100%);
+    z-index: 100;
+    padding: 40px 24px;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.auth-card {
+    background: rgba(13, 15, 23, 0.7);
+    backdrop-filter: blur(50px) saturate(200%);
+    -webkit-backdrop-filter: blur(50px) saturate(200%);
+    width: 100%;
+    max-width: 440px;
+    border-radius: 48px;
+    padding: 40px;
+    box-shadow: 
+        0 40px 120px rgba(0,0,0,0.8), 
+        inset 0 0 0 1px rgba(255,255,255,0.08);
+    border: none;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+    animation: authEntrance 1s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes authEntrance {
+    from { opacity: 0; transform: translateY(60px) scale(0.9); filter: blur(10px); }
+    to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+}
+
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(30px) scale(0.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.auth-header {
+    text-align: center;
+}
+
+.auth-header h1 {
+    font-size: 40px;
+    font-weight: 900;
+    letter-spacing: -2px;
+    margin-bottom: 8px;
+    background: linear-gradient(to right, #fff 20%, #3b82f6 50%, #b829ff 80%);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shine 3s linear infinite;
+}
+
+@keyframes shine {
+    to { background-position: 200% center; }
+}
+
+.auth-header p {
+    color: var(--text-secondary);
+    font-size: 15px;
+    font-weight: 400;
+}
+
+.lang-switch {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.lang-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    padding: 8px 16px;
+    border-radius: var(--border-radius-sm);
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.lang-btn.active {
+    background: var(--text-primary);
+    color: var(--bg-dark);
+    border-color: var(--text-primary);
+}
+
+.role-selection-container {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.role-section-title {
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    letter-spacing: 2px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.role-section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(255,255,255,0.08), transparent);
+}
+
+.role-grid {
+    display: grid;
+    gap: 14px;
+}
+
+.emergency-grid {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.service-grid {
+    grid-template-columns: 1fr 1fr;
+}
+
+.role-btn {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 20px 12px;
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.emergency-grid .role-btn {
+    padding: 16px 8px; /* Slightly smaller for 3-col */
+}
+
+.role-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateY(-4px);
+}
+
+.role-btn.emergency:hover, .role-btn.emergency.active { 
+    border-color: var(--accent-emergency); 
+    background: rgba(255, 51, 102, 0.05);
+    box-shadow: 0 10px 20px var(--accent-emergency-glow), inset 0 1px 0 rgba(255,255,255,0.1); 
+}
+.role-btn.taxi:hover, .role-btn.taxi.active { 
+    border-color: var(--accent-taxi); 
+    background: rgba(255, 184, 0, 0.05);
+    box-shadow: 0 10px 20px var(--accent-taxi-glow), inset 0 1px 0 rgba(255,255,255,0.1); 
+}
+.role-btn.courier:hover, .role-btn.courier.active { 
+    border-color: var(--accent-courier); 
+    background: rgba(0, 210, 255, 0.05);
+    box-shadow: 0 10px 20px var(--accent-courier-glow), inset 0 1px 0 rgba(255,255,255,0.1); 
+}
+.role-btn.fire:hover, .role-btn.fire.active { 
+    border-color: var(--accent-fire); 
+    background: rgba(255, 107, 0, 0.05);
+    box-shadow: 0 10px 20px var(--accent-fire-glow), inset 0 1px 0 rgba(255,255,255,0.1); 
+}
+.role-btn.police:hover, .role-btn.police.active { 
+    border-color: var(--accent-police); 
+    background: rgba(59, 130, 246, 0.05);
+    box-shadow: 0 10px 20px var(--accent-police-glow), inset 0 1px 0 rgba(255,255,255,0.1); 
+}
+
+.role-icon {
+    font-size: 32px;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4));
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.role-btn:hover .role-icon, .role-btn.active .role-icon {
+    transform: scale(1.15) translateY(-2px);
+}
+
+.role-name {
+    font-weight: 700;
+    color: var(--text-primary);
+    font-size: 11px;
+    letter-spacing: 0.3px;
+    text-align: center;
+}
+
+.continue-btn {
+    background: linear-gradient(90deg, #3b82f6, #00d2ff);
+    color: #fff;
+    border: none;
+    padding: 20px;
+    border-radius: 24px;
+    font-weight: 800;
+    font-size: 15px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    margin-top: 8px;
+    position: relative;
+    box-shadow: 0 15px 30px rgba(59, 130, 246, 0.4);
+}
+
+.continue-btn:hover:not(:disabled) {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(59, 130, 246, 0.6);
+}
+
+.continue-btn:disabled {
+    background: rgba(255,255,255,0.05);
+    color: rgba(255,255,255,0.2);
+    box-shadow: none;
+    cursor: not-allowed;
+}
+
+
+/* Map Screen Overlays */
+.top-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    padding: 24px;
+    padding-top: max(24px, env(safe-area-inset-top));
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    pointer-events: none; /* Let map clicks through where no buttons */
+    z-index: 20;
+}
+
+.top-bar-left, .top-bar-right {
+    pointer-events: auto; /* Buttons catch clicks */
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.icon-btn {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: var(--bg-panel-glass);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.15);
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    cursor: pointer;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.4);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.icon-btn:hover {
+    background: rgba(255,255,255,0.1);
+    transform: scale(1.08);
+}
+
+.icon-btn:active {
+    transform: scale(0.92);
+}
+
+.status-pill {
+    background: var(--bg-panel-glass);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.15);
+    padding: 10px 18px;
+    border-radius: 30px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 700;
+    font-size: 14px;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.4);
+}
+
+.status-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    position: relative;
+}
+
+.status-dot::after {
+    content: '';
+    position: absolute;
+    top: -4px; left: -4px; right: -4px; bottom: -4px;
+    border-radius: 50%;
+    animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+    opacity: 0.5;
+}
+
+@keyframes ping {
+    75%, 100% { transform: scale(2); opacity: 0; }
+}
+
+.status-dot.active, .status-dot.active::after { background: var(--accent-courier); }
+.status-dot.routing, .status-dot.routing::after { background: var(--accent-primary); }
+
+/* Bottom Sheet */
+.bottom-sheet {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: rgba(20, 23, 32, 0.9);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: var(--border-radius-xl) var(--border-radius-xl) 0 0;
+    padding: 32px 24px;
+    padding-bottom: max(32px, env(safe-area-inset-bottom));
+    box-shadow: 0 -20px 40px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.1);
+    z-index: 20;
+    pointer-events: auto;
+    transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1.1);
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.bottom-sheet.hidden {
+    transform: translateY(100%);
+}
+
+.sheet-handle {
+    width: 48px;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+    margin: -16px auto 16px auto;
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.input-label {
+    font-size: 14px;
+    color: var(--text-secondary);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.styled-select, .styled-input {
+    width: 100%;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: var(--text-primary);
+    padding: 18px 20px;
+    border-radius: var(--border-radius-md);
+    font-size: 16px;
+    font-weight: 500;
+    font-family: inherit;
+    outline: none;
+    transition: all 0.3s;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.styled-select:focus, .styled-input:focus {
+    border-color: var(--accent-primary);
+    background: rgba(0,0,0,0.5);
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.3), 0 0 0 2px rgba(59, 130, 246, 0.3);
+}
+
+/* For Hospital Select, we need dark options, standard select on mobile renders via OS anyway */
+.styled-select option {
+    background: var(--bg-panel);
+    color: var(--text-primary);
+}
+
+.primary-btn {
+    width: 100%;
+    padding: 20px;
+    border-radius: var(--border-radius-lg);
+    border: none;
+    background: linear-gradient(90deg, #3b82f6, #00d2ff);
+    color: white;
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    box-shadow: 0 10px 25px rgba(0, 210, 255, 0.4);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+
+.primary-btn:hover:not(:disabled) {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 15px 30px rgba(0, 210, 255, 0.6);
+}
+
+.primary-btn:active:not(:disabled) {
+    transform: scale(0.98);
+}
+.primary-btn:disabled {
+    background: #2a2e38;
+    color: #555;
+    box-shadow: none;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Active Trip Panel */
+.trip-panel {
+    position: absolute;
+    top: 24px;
+    left: 24px;
+    right: 24px;
+    background: var(--bg-panel-glass);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border-radius: var(--border-radius-lg);
+    border: 1px solid var(--border-color);
+    padding: 20px;
+    z-index: 20;
+    pointer-events: auto;
+    box-shadow: var(--shadow-lg);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    transform: translateY(-150%);
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+}
+
+.trip-panel.active {
+    transform: translateY(0);
+}
+
+.trip-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.trip-eta {
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--accent-courier);
+}
+
+.trip-eta.delayed {
+    color: var(--accent-taxi);
+}
+
+.trip-eta.severe {
+    color: var(--accent-emergency);
+}
+
+.trip-distance {
+    font-size: 16px;
+    color: var(--text-secondary);
+    font-weight: 600;
+}
+
+.trip-address {
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 1.4;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.trip-traffic-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--accent-emergency);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+
+
+/* Loading animation */
+.loader {
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255,255,255,0.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Responsive adjustments */
+@media (min-width: 768px) {
+    .trip-panel {
+        width: calc(100% - 48px); /* Full width within phone */
+        left: 24px;
+        right: 24px;
+    }
+}

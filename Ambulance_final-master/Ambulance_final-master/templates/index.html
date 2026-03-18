@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SmartRoute - Intelligent Navigation</title>
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="/static/css/smartroute.css?v=14">
+    
+    <!-- Emojis as icons for simplicity, could be replaced with SVG/Iconify -->
+</head>
+
+<body>
+    <div id="app">
+        <!-- MAP LAYER (Background) -->
+        <div class="map-container">
+            <div id="map"></div>
+        </div>
+
+        <!-- SCREEN 1: Authentication & Role Selection -->
+        <div id="auth-screen" class="screen active">
+            <div class="auth-card">
+                <div class="auth-header">
+                    <h1>SmartRoute</h1>
+                    <p id="t-auth-subtitle">Welcome. Select your module.</p>
+                </div>
+
+                <div class="lang-switch">
+                    <button class="lang-btn active" data-lang="ru">Русский</button>
+                    <button class="lang-btn" data-lang="kg">Кыргызча</button>
+                </div>
+
+                <div class="role-selection-container">
+                    <!-- Emergency Sector -->
+                    <div class="role-section">
+                        <h3 class="role-section-title" id="t-sector-emergency">Экстренные службы</h3>
+                        <div class="role-grid emergency-grid">
+                            <div class="role-btn emergency" data-role="emergency">
+                                <span class="role-icon">🚑</span>
+                                <span class="role-name" id="t-role-emergency">Скорая</span>
+                            </div>
+                            <div class="role-btn fire" data-role="fire">
+                                <span class="role-icon">🚒</span>
+                                <span class="role-name" id="t-role-fire">Пожарная</span>
+                            </div>
+                            <div class="role-btn police" data-role="police">
+                                <span class="role-icon">🚓</span>
+                                <span class="role-name" id="t-role-police">Полиция</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Commercial Sector -->
+                    <div class="role-section">
+                        <h3 class="role-section-title" id="t-sector-service">Сервисы и логистика</h3>
+                        <div class="role-grid service-grid">
+                            <div class="role-btn taxi" data-role="taxi">
+                                <span class="role-icon">🚕</span>
+                                <span class="role-name" id="t-role-taxi">Такси</span>
+                            </div>
+                            <div class="role-btn courier" data-role="courier">
+                                <span class="role-icon">🛵</span>
+                                <span class="role-name" id="t-role-courier">Курьер</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="continue-btn" id="btn-login" disabled>
+                    <span id="t-btn-continue">Продолжить</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- SCREEN 2: Main Map Flow -->
+        <div id="map-screen" class="screen">
+            
+            <!-- Top Floating Controls -->
+            <div class="top-bar">
+                <div class="top-bar-left">
+                    <button class="icon-btn" id="btn-profile">👤</button>
+                    <button class="icon-btn" id="btn-logout">🚪</button>
+                </div>
+                <div class="top-bar-right">
+                    <div class="status-pill">
+                        <div class="status-dot active" id="system-status-dot"></div>
+                        <span id="system-status-text">Онлайн</span>
+                    </div>
+                    <button class="icon-btn" id="btn-center-map" style="margin-top: auto;">📍</button>
+                </div>
+            </div>
+
+            <!-- Bottom Sheet: Planning -->
+            <div class="bottom-sheet" id="planning-sheet">
+                <div class="sheet-handle"></div>
+                
+                <!-- Placeholder for standard spacing, analytics removed -->
+
+                <!-- Hospital Select (Only for Emergency) -->
+                <div class="input-group" id="group-hospital" style="display: none;">
+                    <label class="input-label" id="t-label-hospital">Выберите подстанцию / больницу</label>
+                    <select class="styled-select" id="hospital-select">
+                        <option value="">Загрузка...</option>
+                    </select>
+                </div>
+
+                <!-- Destination -->
+                <div class="input-group" id="group-destination">
+                    <label class="input-label" id="t-label-destination">Куда едем?</label>
+                    <div style="position: relative;">
+                        <input type="text" class="styled-input" id="destination-input" placeholder="Нажмите на карту для выбора" readonly>
+                        <button class="icon-btn" id="btn-clear-dest" style="position: absolute; right: 4px; top: 4px; width: 40px; height: 40px; background: transparent; border: none; box-shadow: none;">✖</button>
+                    </div>
+                </div>
+
+                <button class="primary-btn" id="btn-calculate" disabled>
+                    <span id="t-btn-calculate">Рассчитать маршрут</span>
+                </button>
+            </div>
+
+            <!-- Trip Info Panel (Top sliding) -->
+            <div class="trip-panel" id="trip-panel">
+                <div class="trip-header">
+                    <div>
+                        <div class="trip-eta" id="trip-eta">-- мин</div>
+                        <div class="trip-distance" id="trip-distance">-- км</div>
+                    </div>
+                    <button class="icon-btn" id="btn-cancel-trip" style="background: rgba(239, 68, 68, 0.2); color: #ef4444; border-color: rgba(239, 68, 68, 0.3);">✖</button>
+                </div>
+                
+                <div class="trip-address" id="trip-address">Направление...</div>
+                
+                <div id="trip-alerts">
+                    <!-- Dynamic badges here -->
+                    <div class="trip-traffic-badge" id="traffic-badge" style="display:none;">
+                        ⚠️ Затор на маршруте (+5 мин)
+                    </div>
+                    <div id="ai-savings-text" style="display:none;font-size:13px;color:var(--accent-courier);margin-top:8px;">
+                        <!-- AI text injected here via JS -->
+                    </div>
+                </div>
+
+                <button class="primary-btn" id="btn-start-nav" style="background: var(--accent-courier);">
+                    <span id="t-btn-start">Начать движение</span>
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- Main Logic -->
+    <script src="/static/js/main.js?v=14"></script>
+</body>
+
+</html>
